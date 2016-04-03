@@ -1,0 +1,21 @@
+{
+  "name": "meetflix-login",
+  "version": "1.0.0",
+  "description": "test server at port 3000 for oauth login",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify main.js -o app.js",
+    "watch": "watchify main.js -o app.js"
+  },
+  "author": "sekwon choi",
+  "license": "ISC",
+  "dependencies": {
+    "browserify": "^13.0.0",
+    "express": "^4.13.4",
+    "mongoose": "^4.4.10",
+    "require": "^2.4.20",
+    "simple-oauth2": "^0.5.1",
+    "watchify": "^3.7.0"
+  }
+}
