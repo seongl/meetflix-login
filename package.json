@@ -5,7 +5,9 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "browserify main.js -o app.js",
+    "build-debug": "browserify main.js -d -o app.js",
+    "build-release": "browserify main.js | uglifyjs -c > app.min.js",
+    "build": "npm run build-debug && npm run build-release",
     "watch": "watchify main.js -o app.js"
   },
   "author": "sekwon choi",
@@ -16,6 +18,7 @@
     "mongoose": "^4.4.10",
     "require": "^2.4.20",
     "simple-oauth2": "^0.5.1",
+    "uglify-js": "^2.6.2",
     "watchify": "^3.7.0"
   }
 }
