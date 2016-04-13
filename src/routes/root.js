@@ -1,5 +1,5 @@
 /*
- API Route
+ root Route
 */
 var express = require('express');
 var router = express.Router();

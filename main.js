@@ -1,5 +1,5 @@
 /*
- * login server main application
+ * authentication / RESTful API server main application
  */
 
 // application configuration and defines
@@ -16,4 +16,4 @@ app.use('/login', loginRoute);
 app.use('/api', apiRoute);
 app.listen(3000);
 
-console.log('Express server started on port 3000');
+console.log('Authentication/RESTful-API server started on port 3000');
