@@ -1,5 +1,5 @@
 
-var mongoose = require('mongoose');
+var mongoose = require('../db/mongoose.js');
 var Schema   = mongoose.Schema;
 
 /*
