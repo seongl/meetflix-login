@@ -3,7 +3,7 @@
  */
 
 // application configuration and defines
-var config = require("./src/publicConfig.js");
+import config from "./src/publicConfig" ;
 var express = require('express'),
     app = express();
 

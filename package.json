@@ -8,11 +8,15 @@
     "build-debug": "browserify --node main.js -d -o app.js",
     "build-release": "browserify --node main.js | uglifyjs -c > app.min.js",
     "build": "npm run build-debug && npm run build-release",
-    "watch": "watchify main.js -o app.js"
+    "watch": "watchify main.js -o app.js",
+    "dev": "nodemon ./main.js --watch src --watch main.js --exec babel-node --presets es2015"
   },
   "author": "sekwon choi",
   "license": "ISC",
   "dependencies": {
+    "babel-cli": "^6.3.17",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-react": "^6.3.13",
     "browserify": "^13.0.0",
     "express": "^4.13.4",
     "mongodb": "^2.1.16",
@@ -21,5 +25,14 @@
     "simple-oauth2": "^0.5.1",
     "uglify-js": "^2.6.2",
     "watchify": "^3.7.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.3.26",
+    "babel-loader": "^6.2.1",
+    "babel-plugin-transform-object-rest-spread": "^6.6.5",
+    "nodemon": "^1.9.1",
+    "parallelshell": "^2.0.0",
+    "webpack": "^1.12.3",
+    "webpack-node-externals": "^1.0.0"
   }
 }
