@@ -61,7 +61,7 @@ var AccessTokenSchema = new Schema({
         default: Date.now
     }
 });
-var AccessTokenModel  = mongoose.model('AccessToken', AccessTokenSchema);
+var AccessTokenModel = mongoose.model('AccessToken', AccessTokenSchema);
 
 // Client app registration information
 // exmaple:
