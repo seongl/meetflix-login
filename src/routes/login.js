@@ -49,7 +49,7 @@ passport.use(new facebookStrategy({
                       accesstoken: accessToken,
                       refreshtoken: refreshToken
                     }],
-            photo: "https://graph.facebook.com/" + profile.username + "/picture" + "?width=200&height=200" + "&access_token=" + accessToken
+            photo: "https://graph.facebook.com/v2.6/" + profile.id + "/picture" + "?width=200&height=200" + "&access_token=" + accessToken
           })
           user.save(function (err) {
             if (err) console.log(err)
