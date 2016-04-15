@@ -25,6 +25,11 @@ var UserSchema = new Schema({
         unique: true,
         required: true
     },
+		name: {
+				type: String,
+				unique: false,
+				required: false
+		},
     username: {
         type: String,
         unique: false,
@@ -34,8 +39,13 @@ var UserSchema = new Schema({
         type: Date,
         default: Date.now
     },
+		photo: {
+				type: String,
+				unique: false,
+				required: false
+		},
 		oauth: [{
-				name: {
+				provider: {
 					type: String,
 					unique: true,
 					required: true
@@ -45,11 +55,17 @@ var UserSchema = new Schema({
 					unique: true,
 					required: true
 				},
+				refreshtoken: {
+					type: String,
+					unique: true,
+					required: true
+				},
 				expires: {
 					type: Date,
 					default: Date.now
 				}
-		}]
+			}]
+
 });
 // compile a schema into model.
 var UserModel = mongoose.model('User', UserSchema);

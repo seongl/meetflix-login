@@ -2,7 +2,7 @@ var express  = require('express');
 var passport = require('passport');
 var facebookStrategy = require('passport-facebook').Strategy;
 var config   = require("../publicConfig.js");
-
+var User = require('../model/model.js').User;
 
 
 // Configure the Facebook strategy for use by Passport.
@@ -18,7 +18,8 @@ passport.use(new facebookStrategy({
     clientID: config.FACEBOOK_CLIENT_ID,
     clientSecret: config.FACEBOOK_CLIENT_SECRET,
     callbackURL: 'http://www.meetflix.org/login/facebook/return',
-    enableProof: false
+    enableProof: false,
+    profileFields: ['id', 'name','picture.type(large)', 'emails', 'username', 'displayName', 'about', 'gender']
  },
   // verify callback
   // The verify callback must call cb providing a user to complete authentication.
@@ -30,11 +31,36 @@ passport.use(new facebookStrategy({
     // providers.
 
     // 여기서 dataBase에 연결하는 코드를 넣는다.
+
+
     /*
     User.findOrCreate({ facebookId: profile.id }, function (err, user) {
       return cb(err, user);
     });
     */
+
+    User.findOne({ 'facebook.id': profile.id }, function (err, user) {
+        if (err) { return done(err) }
+        if (!user) {
+          user = new User({
+            name: profile.displayName,
+            email: profile.emails[0].value,
+            username: profile.username,
+            oauth: [{ provider: 'facebook',
+                      accesstoken: accessToken,
+                      refreshtoken: refreshToken
+                    }],
+            photo: "https://graph.facebook.com/" + profile.username + "/picture" + "?width=200&height=200" + "&access_token=" + accessToken
+          })
+          user.save(function (err) {
+            if (err) console.log(err)
+            return done(err, user)
+          })
+        }
+        else {
+          return done(err, user)
+        }
+      })
 
     return cb(null, profile);
   }));

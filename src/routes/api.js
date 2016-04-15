@@ -63,7 +63,7 @@ router.route('/users/:username')
         User.findById(req.params.username, function(err, user) {
             if (err)
                 res.send(err);
-            res.json(bear);
+            res.json(user);
         });
       })
 
