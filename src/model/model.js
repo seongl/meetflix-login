@@ -53,7 +53,7 @@ var UserSchema = new Schema({
 				refreshtoken: {
 					type: String,
 					unique: true,
-					required: true
+					required: false
 				},
 				expires: {
 					type: Date,
