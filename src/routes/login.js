@@ -17,8 +17,9 @@ var config   = require("../publicConfig.js");
 passport.use(new facebookStrategy({
     clientID: config.FACEBOOK_CLIENT_ID,
     clientSecret: config.FACEBOOK_CLIENT_SECRET,
-    callbackURL: 'http://www.meetflix.org/login/facebook/return'
-  },
+    callbackURL: 'http://www.meetflix.org/login/facebook/return',
+    enableProof: false
+ },
   // verify callback
   // The verify callback must call cb providing a user to complete authentication.
   function(accessToken, refreshToken, profile, cb) {
@@ -35,6 +36,7 @@ passport.use(new facebookStrategy({
     });
     */
 
+    return cb(null, profile);
   }));
 
 
@@ -77,18 +79,13 @@ router.route('/facebook')
 
 // facebook authentication이 끊나고 돌아오는 url.
 // facebook strategy에 이 url을 알려주어야 한다.
-/*
 router.route('/facebook/return')
       .get(passport.authenticate('facebook', { failureRedirect: '/login' }),
           function(req, res) {
             console.log("facebook returned");
-            res.redirect('/');
+            res.redirect('http://www.meetflix.org');
         });
-*/
-router.route('/facebook/return')
-.get(function(req, res){
-  res.json({message: "returned from facebook"});
-});
+
 /*
 app.get('/profile',
   require('connect-ensure-login').ensureLoggedIn(),
