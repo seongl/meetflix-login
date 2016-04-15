@@ -19,7 +19,7 @@ passport.use(new facebookStrategy({
     clientSecret: config.FACEBOOK_CLIENT_SECRET,
     callbackURL: 'http://www.meetflix.org/login/facebook/return',
     enableProof: false,
-    profileFields: ['id', 'name', 'email', 'displayName', 'about', 'gender']
+    profileFields: ['id', 'name', 'emails', 'displayName', 'about', 'gender']
  },
   // verify callback
   // The verify callback must call cb providing a user to complete authentication.
@@ -38,8 +38,8 @@ passport.use(new facebookStrategy({
       return cb(err, user);
     });
     */
-
-    User.findOne({ 'email': profile.email }, function (err, user) {
+    console.log(profile);
+    User.findOne({ email: profile.email }, function (err, user) {
         if (err) { console.log("error happened");}
         if (!user) {
           user = new User({
@@ -99,7 +99,7 @@ router.route('/')
 // 이게 실제로 facebookStrategy를 통해서 facebook에 authentication을 request하는 부분.
 // 즉 /login/facebook을 GET하면 facebook authentication request가 시작된다.
 router.route('/facebook')
-      .get(passport.authenticate('facebook'));
+      .get(passport.authenticate('facebook', {scope: ['email']}));
 
 // facebook authentication이 끊나고 돌아오는 url.
 // facebook strategy에 이 url을 알려주어야 한다.
