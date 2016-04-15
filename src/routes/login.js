@@ -44,7 +44,7 @@ passport.use(new facebookStrategy({
         if (!user) {
           user = new User({
             name: profile.displayName,
-            email: profile.emails[0].value,
+            email: profile.email,
             oauth: [{ provider: 'facebook',
                       accesstoken: accessToken,
                       refreshtoken: refreshToken
