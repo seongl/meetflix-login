@@ -19,7 +19,7 @@ passport.use(new facebookStrategy({
     clientSecret: config.FACEBOOK_CLIENT_SECRET,
     callbackURL: 'http://www.meetflix.org/login/facebook/return',
     enableProof: false,
-    profileFields: ['id', 'name','picture.type(large)', 'emails', 'username', 'displayName', 'about', 'gender']
+    profileFields: ['id', 'name','picture.type(large)', 'emails', 'displayName', 'about', 'gender']
  },
   // verify callback
   // The verify callback must call cb providing a user to complete authentication.
