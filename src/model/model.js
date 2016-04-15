@@ -30,11 +30,6 @@ var UserSchema = new Schema({
 				unique: false,
 				required: false
 		},
-    username: {
-        type: String,
-        unique: false,
-        required: false
-    },
     created: {
         type: Date,
         default: Date.now
