@@ -25,69 +25,33 @@ var UserSchema = new Schema({
         unique: true,
         required: true
     },
-	// username is like nickname in case user does not want to use eamil
     username: {
         type: String,
-        unique: true,
+        unique: false,
         required: false
     },
     created: {
         type: Date,
         default: Date.now
-    }
+    },
+		oauth: [{
+				name: {
+					type: String,
+					unique: true,
+					required: true
+				},
+				accesstoken: {
+					type: String,
+					unique: true,
+					required: true
+				},
+				expires: {
+					type: Date,
+					default: Date.now
+				}
+		}]
 });
 // compile a schema into model.
 var UserModel = mongoose.model('User', UserSchema);
 
-// AccessToken
-var AccessTokenSchema = new Schema({
-    userObjId: {
-        type: String,
-        required: true
-    },
-    // clientId can be different depending on which 3rd party server is used.
-    // e.g. facebook vs linkedin
-    clientId: {
-        type: String,
-        required: true
-    },
-    token: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    created: {
-        type: Date,
-        default: Date.now
-    }
-});
-var AccessTokenModel = mongoose.model('AccessToken', AccessTokenSchema);
-
-// Client app registration information
-// exmaple:
-//  name: facebook
-//  clientId: 24132w3423
-//  clientSecret: afefad324fs
-
-var ClientSchema = new Schema({
-    name: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    clientId: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    clientSecret: {
-        type: String,
-        required: true
-    }
-});
-// compile a schema into model.
-var ClientModel = mongoose.model('Client', ClientSchema);
-
 module.exports.User = UserModel;
-module.exports.Client = ClientModel;
-module.exports.AccessToken = AccessTokenModel;

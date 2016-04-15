@@ -6,21 +6,31 @@
 import config from "./src/publicConfig" ;
 var express = require('express'),
     app = express();
+var passport = require('passport');
 var bodyParser = require('body-parser');
-
-// configure app to use bodyParser()
-// this will let us get the data from a POST
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
 var rootRoute = require('./src/routes/root.js');
 var loginRoute = require('./src/routes/login.js');
 var apiRoute = require('./src/routes/api.js');
 
+
+// App configurations
+// configure app to use bodyParser(). this will let us get the data from a POST
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(require('morgan')('combined'));
+app.use(require('cookie-parser')());
+app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
+// Initialize Passport and restore authentication state, if any, from the session.
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+// route settings
 app.use('/', rootRoute);
 app.use('/login', loginRoute);
 app.use('/api', apiRoute);
 
+// now, listen!
 app.listen(3000);
 
 console.log('Authentication/RESTful-API server started on port 3000');

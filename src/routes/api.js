@@ -1,6 +1,4 @@
 var User = require('../model/model.js').User;
-var AccessToken = require('../model/model.js').AccessToken;
-var Client = require('../model/model.js').Client;
 
 /*
 RESTful API specification
