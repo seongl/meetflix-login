@@ -39,8 +39,8 @@ passport.use(new facebookStrategy({
     });
     */
 
-    User.findOne({ 'facebook.id': profile.id }, function (err, user) {
-        if (err) { return done(err) }
+    User.findOne({ 'email': profile.email }, function (err, user) {
+        if (err) { console.log("error happened");}
         if (!user) {
           user = new User({
             name: profile.displayName,
@@ -53,11 +53,10 @@ passport.use(new facebookStrategy({
           })
           user.save(function (err) {
             if (err) console.log(err)
-            return done(err, user)
           })
         }
         else {
-          return done(err, user)
+          console.log("user is already signed up");
         }
       })
 
