@@ -123,11 +123,19 @@ router.route('/login/facebook')
 // facebook authentication이 끊나고 돌아오는 url.
 // facebook strategy에 이 url을 알려주어야 한다.
 router.route('/login/facebook/return')
-      .get(passport.authenticate('facebook', { failureRedirect: '/login' }),
+      .get(passport.authenticate('facebook', { successRedirect: 'http://www.meetflix.org', failureRedirect: '/login' }),
           function(req, res) {
+            User.findOne({email: req.user.email}, function(err, user){
+              if(user){
+                  console.log("returned : with email found");
+                  res.cookie('id', user.id, {domain: '.meetflix.org'});
+                  res.cookie('email', user.email, {domain: '.meetflix.org'});
+                  res.cookie('token', user.oauth[0].accesstoken, {domain: '.meetflix.org'})
+              } else {
+                console.log("returned : with email not found");
+              }
+            });
             console.log("facebook returned");
-            res.cookie('foo', 'bar');
-            res.redirect('http://www.meetflix.org');
         });
 
 router.route('/logout')
