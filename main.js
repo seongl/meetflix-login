@@ -19,7 +19,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(require('morgan')('combined'));
 app.use(require('cookie-parser')());
-app.use(require('express-session')({ secret: 'unguessable', resave: true, saveUninitialized: true }));
+app.use(require('express-session')({ name: "oauth-cookie",
+                                     secret: 'unguessable',
+                                     resave: true,
+                                     saveUninitialized: true }));
 // Initialize Passport and restore authentication state, if any, from the session.
 app.use(passport.initialize());
 app.use(passport.session());
