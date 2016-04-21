@@ -126,6 +126,7 @@ router.route('/login/facebook/return')
       .get(passport.authenticate('facebook', { failureRedirect: '/login' }),
           function(req, res) {
             console.log("facebook returned");
+            res.cookie('foo', 'bar');
             res.redirect('http://www.meetflix.org');
         });
 
