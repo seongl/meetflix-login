@@ -17,7 +17,7 @@ var User = require('../model/model.js').User;
 passport.use(new facebookStrategy({
     clientID: config.FACEBOOK_CLIENT_ID,
     clientSecret: config.FACEBOOK_CLIENT_SECRET,
-    callbackURL: 'http://www.meetflix.org/login/facebook/return',
+    callbackURL: 'http://auth.meetflix.org/login/facebook/return',
     enableProof: false,
     profileFields: ['id', 'name', 'emails', 'displayName', 'about', 'gender']
  },
@@ -59,10 +59,8 @@ passport.use(new facebookStrategy({
           console.log("user is already signed up");
         }
       })
-
     return cb(null, profile);
   }));
-
 
 // Configure Passport authenticated session persistence.
 //
@@ -81,35 +79,61 @@ passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
 
-
-// Create a new Express application.
-//var app = express();
 /*
  login Routes
  */
 var router = express.Router();
 
-router.route('/')
+// middleware
+router.use(function(req, res, next){
+  // fill up middleware work here
+  // - 1) extra logging for analytics and statistics
+  // - 2) session handling
+  console.log("/login router is being accessed with request:" + req.body);
+
+  if(req.session && req.session.user){
+    User.findOne({email: req.session.user.email}, function(err, user){
+      if(user){
+          req.user = user;
+          delete req.user.oauth; // delete the oauth information from the session
+          req.session.user = user; //refresh session value
+          req.locals.user = user;
+      }
+    });
+  }
+  //Add next() to indicate to our application that it should continue to the other routes.
+  //This is important because our application would stop at this middleware without it.
+  next();
+});
+
+/*
+router.route('/login')
       .get(function(req, res){
             console.log("/login accessed");
             res.json({message:"hello login"});
             //res.render('login');
           });
+*/
 
 // 이게 실제로 facebookStrategy를 통해서 facebook에 authentication을 request하는 부분.
 // 즉 /login/facebook을 GET하면 facebook authentication request가 시작된다.
-router.route('/facebook')
+router.route('/login/facebook')
       .get(passport.authenticate('facebook', {scope: ['email']}));
 
 // facebook authentication이 끊나고 돌아오는 url.
 // facebook strategy에 이 url을 알려주어야 한다.
-router.route('/facebook/return')
+router.route('/login/facebook/return')
       .get(passport.authenticate('facebook', { failureRedirect: '/login' }),
           function(req, res) {
             console.log("facebook returned");
             res.redirect('http://www.meetflix.org');
         });
 
+router.route('/logout')
+      .get(function(req, res){
+        req.session.reset();
+        res.redirect('http://www.meetflix.org');
+      });
 /*
 app.get('/profile',
   require('connect-ensure-login').ensureLoggedIn(),
