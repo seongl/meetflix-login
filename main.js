@@ -22,7 +22,8 @@ app.use(require('cookie-parser')());
 app.use(require('express-session')({ name: "oauth-cookie",
                                      secret: 'unguessable',
                                      resave: true,
-                                     saveUninitialized: true }));
+                                     saveUninitialized: true,
+                                     cookie: { httpOnly: true, secure: false}}));
 // Initialize Passport and restore authentication state, if any, from the session.
 app.use(passport.initialize());
 app.use(passport.session());
