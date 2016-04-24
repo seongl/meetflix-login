@@ -38,8 +38,9 @@ passport.use(new facebookStrategy({
       return cb(err, user);
     });
     */
+    console.log("------------");
     console.log(profile);
-    User.findOne({ email: profile.email }, function (err, user) {
+    User.findOne({ email: profile.emails[0].value }, function (err, user) {
         if (err) { console.log("error happened");}
         if (!user) {
           user = new User({
@@ -126,7 +127,8 @@ router.route('/login/facebook/return')
       .get(passport.authenticate('facebook', { successRedirect: 'http://www.meetflix.org', failureRedirect: '/login' }),
           function(req, res) {
             User.findOne({email: req.user.email}, function(err, user){
-              if(user){
+          if (err) { console.log("error happened");}
+                if(user){
                   console.log("returned : with email found");
                   res.cookie('id', user.id, {domain: '.meetflix.org'});
                   res.cookie('email', user.email, {domain: '.meetflix.org'});
