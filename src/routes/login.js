@@ -140,6 +140,8 @@ router.route('/login/facebook/return')
 
 router.route('/logout')
       .get(function(req, res){
+        console.log("log out");
+        console.log(req.session);
         req.session.reset();
         res.redirect('http://www.meetflix.org');
       });
