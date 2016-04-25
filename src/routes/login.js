@@ -13,6 +13,9 @@ var User = require('../model/model.js').User;
 // with a user object, which will be set at `req.user` in route handlers after
 // authentication.
 
+passport.initialize();
+passport.session();
+
 // 억세스 토큰, refresh token을 받음 -> verify function불림
 passport.use(new facebookStrategy({
     clientID: config.FACEBOOK_CLIENT_ID,
@@ -20,49 +23,39 @@ passport.use(new facebookStrategy({
     callbackURL: 'http://auth.meetflix.org/login/facebook/return',
     enableProof: false,
     profileFields: ['id', 'name', 'emails', 'displayName', 'about', 'gender']
- },
-  // verify callback
-  // The verify callback must call cb providing a user to complete authentication.
-  function(accessToken, refreshToken, profile, cb) {
-    // In this example, the user's Facebook profile is supplied as the user
-    // record.  In a production-quality application, the Facebook profile should
-    // be associated with a user record in the application's database, which
-    // allows for account linking and authentication with other identity
-    // providers.
-
-    // 여기서 dataBase에 연결하는 코드를 넣는다.
-
-
-    /*
-    User.findOrCreate({ facebookId: profile.id }, function (err, user) {
-      return cb(err, user);
-    });
-    */
-    console.log("------------");
-    console.log(profile);
+}, function(accessToken, refreshToken, profile, cb) {
+    console.log("passport middleware ------------");
+    //console.log(profile);
     User.findOne({ email: profile.emails[0].value }, function (err, user) {
-        if (err) { console.log("error happened");}
-        if (!user) {
-          user = new User({
-            name: profile.displayName,
-            email: profile.emails[0].value,
-            oauth: [{ provider: 'facebook',
-                      accesstoken: accessToken,
-                      refreshtoken: refreshToken
-                    }],
-            photo: "https://graph.facebook.com/v2.6/" + profile.id + "/picture" + "?width=200&height=200" + "&access_token=" + accessToken
-          })
-          user.save(function (err) {
-            if (err) console.log(err)
-          })
-        }
-        else {
-          console.log("user is already signed up");
+	if (err) { 
+	    console.log("error happened");
+	    return cb(err);
+	}
+	if (!user) {
+	    console.log("new user");
+            var newuser = new User({
+		id: profile.id,
+		name: profile.displayName,
+		email: profile.emails[0].value,
+		oauth: [{ provider: 'facebook',
+			  accesstoken: accessToken,
+			  refreshtoken: refreshToken
+			}],
+		photo: "https://graph.facebook.com/v2.6/" + profile.id + "/picture" + "?width=200&height=200" + "&access_token=" + accessToken
+            })
+            newuser.save(function (err) {
+		if (err) console.log(err)
+		return cb(null, newuser);
+	    })
+        } else {
+            console.log("user is already signed up");
 	    console.log(user);
+	    console.log("****");
+	    // if call user, not profile, some error happnes.
+	    return cb(null, user);
         }
-      })
-    return cb(null, profile);
-  }));
+    })
+}));
 
 // Configure Passport authenticated session persistence.
 //
@@ -74,7 +67,7 @@ passport.use(new facebookStrategy({
 // example does not have a database, the complete Twitter profile is serialized
 // and deserialized.
 passport.serializeUser(function(user, cb) {
-  cb(null, user.id);
+    cb(null, user.id);
 });
 
 passport.deserializeUser(function(id, cb) {
@@ -84,72 +77,95 @@ passport.deserializeUser(function(id, cb) {
 });
 
 /*
- login Routes
- */
+  login Routes
+*/
 var router = express.Router();
 
 // middleware
 router.use(function(req, res, next){
-  // fill up middleware work here
-  // - 1) extra logging for analytics and statistics
-  // - 2) session handling
-  console.log("/login router is being accessed with request:" + req.session);
-
-  if(req.session && req.session.user){
-      console.log("user id " + req.session.user);
-      User.findOne({id: req.session.user.id}, function(err, user){
-      if(user){
-	  console.log("user found :" + user.id); 
-          req.user = user;
-          delete req.user.oauth; // delete the oauth information from the session
-          req.session.user = user; //refresh session value
-          req.locals.user = user;
-      }else{
-	  console.log("user not found");
-      }
-    });
-  }
-  //Add next() to indicate to our application that it should continue to the other routes.
-  //This is important because our application would stop at this middleware without it.
-  next();
+    // fill up middleware work here
+    // - 1) extra logging for analytics and statistics
+    // - 2) session handling
+    console.log("/login router is being accessed with request:" + req.session);
+    if(req.session && req.session.user){
+	console.log("user id " + req.session.user);
+	User.findOne({id: req.session.user.id}, function(err, user){
+	    if(user){
+		console.log("user found :" + user.id); 
+		req.user = user;
+		delete req.user.oauth; // delete the oauth information from the session
+		req.session.user = user; //refresh session value
+		req.locals.user = user;
+	    }else{
+		console.log("user not found");
+	    }
+	});
+    }else{
+	console.log("no session from req");
+    }
+    //Add next() to indicate to our application that it should continue to the other routes.
+    //This is important because our application would stop at this middleware without it.
+    next();
 });
-
 
 // 이게 실제로 facebookStrategy를 통해서 facebook에 authentication을 request하는 부분.
 // 즉 /login/facebook을 GET하면 facebook authentication request가 시작된다.
-router.route('/login/facebook')
-      .get(passport.authenticate('facebook', {scope: ['email']}));
+router
+    .route('/login/facebook')
+    .get(passport.authenticate('facebook', {scope: ['email']}));
 
 // facebook authentication이 끊나고 돌아오는 url.
 // facebook strategy에 이 url을 알려주어야 한다.
 router
     .route('/login/facebook/return')
     .get(passport.authenticate('facebook', 
-			       { successRedirect: 'http://www.meetflix.org', failureRedirect: '/login' }),
-			       function(req, res) {
-				   console.log("/login/facebook/return accessed...");
-				   User.findOne({email: req.user.email}, function(err, user){
-				       if (err) { console.log("error happened");}
-				       if(user){
-					   console.log("returned : with email found");
-					   res.cookie('id', user.id, {domain: '.meetflix.org'});
-					   res.cookie('email', user.email, {domain: '.meetflix.org'});
-					   res.cookie('token', user.oauth[0].accesstoken, {domain: '.meetflix.org'})
-				       } else {
-					   console.log("returned : with email not found");
-				       }
-				   });
-				   console.log("facebook returned");
-			       });
-	 
+			       {failureRedirect: '/login/facebook'}),
+	 function(req, res) {
+	     console.log(req.user);
+	     console.log("---------------------- --- --");
+	     User.findOne({email: req.user.email}, function(err, user){
+		 if (err) { console.log("error happened");}
+		 if (user) {
+		     // TODO : when found case
+		     console.log("returned : with email found");
+		 } else {
+		     // TODO : when not found case
+		     console.log("returned : with email not found");
+		 }
+	     });
+	     res.redirect("http://www.meetflix.org");
+	     //res.redirect('/profile');
+	 });
+
 router
     .route('/logout')
     .get(function(req, res){
 	console.log("log out");
         console.log(req.session);
-        //req.session.reset();
-	req.logout();
+        req.logout();
 	res.redirect('http://www.meetflix.org');
     });
+
+router
+    .route('/profile')
+    .get(function(req, res) {
+	console.log("profile route");
+	console.log(req.isAuthenticated());
+	console.log(req.user);
+	res.json(req.user);
+    });
+
+// route middleware to make sure a user is logged in
+function isLoggedIn(req, res, next) {
+
+    console.log("isLoggedin");
+    // if user is authenticated in the session, carry on
+    if (req.isAuthenticated())
+        return next();
+
+    // if they aren't redirect them to the home page
+    console.log("not logged in");
+    res.redirect('http://www.meetflix.org');
+}
 
 module.exports = router;

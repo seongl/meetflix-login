@@ -23,7 +23,7 @@ app.use(require('express-session')({ name: "oauth-cookie",
                                      secret: 'unguessable',
                                      resave: true,
                                      saveUninitialized: true,
-                                     cookie: { httpOnly: true, secure: true}}));
+                                     cookie: { httpOnly: true, secure: false}}));
 // Initialize Passport and restore authentication state, if any, from the session.
 app.use(passport.initialize());
 app.use(passport.session());
@@ -32,7 +32,7 @@ app.use(passport.session());
 // route settings
 //app.use('/', rootRoute);
 app.use('/', loginRoute);
-//app.use('/api', apiRoute);
+app.use('/api', apiRoute);
 
 // now, listen!
 app.listen(3000);

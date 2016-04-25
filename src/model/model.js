@@ -19,48 +19,52 @@ AccessToken – token (type of bearer), issued to the client application, limite
 //  create: 01/01/2001
 
 var UserSchema = new Schema({
-	// email is primary user identifier
-		email: {
+    id: {
+	type: Number,
+	unique: true,
+	required: true
+    },
+    email: {
         type: String,
         unique: true,
         required: true
     },
-		name: {
-				type: String,
-				unique: false,
-				required: false
-		},
+    name: {
+	type: String,
+	unique: false,
+	required: false
+    },
     created: {
         type: Date,
-        default: Date.now
+    default: Date.now
     },
-		photo: {
-				type: String,
-				unique: false,
-				required: false
-		},
-		oauth: [{
-				provider: {
-					type: String,
-					unique: true,
-					required: true
-				},
-				accesstoken: {
-					type: String,
-					unique: true,
-					required: true
-				},
-				refreshtoken: {
-					type: String,
-					unique: true,
-					required: false
-				},
-				expires: {
-					type: Date,
-					default: Date.now
-				}
-			}]
-
+    photo: {
+	type: String,
+	unique: false,
+	required: false
+    },
+    oauth: [{
+	provider: {
+	    type: String,
+	    unique: true,
+	    required: true
+	},
+	accesstoken: {
+	    type: String,
+	    unique: true,
+	    required: true
+	},
+	refreshtoken: {
+	    type: String,
+	    unique: true,
+	    required: false
+	},
+	expires: {
+	    type: Date,
+	default: Date.now
+	}
+    }]
+    
 });
 // compile a schema into model.
 var UserModel = mongoose.model('User', UserSchema);
