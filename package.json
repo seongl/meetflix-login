@@ -5,10 +5,10 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-debug": "browserify --node main.js -d -o app.js",
-    "build-release": "browserify --node main.js | uglifyjs -c > app.min.js",
-    "build": "npm run build-debug && npm run build-release",
-    "watch": "watchify main.js -o app.js",
+    "build-debug": "webpack",
+    "build-release": "webpack",
+    "build": "npm run build-debug",
+    "watch": "webpack --watch",
     "dev": "nodemon ./main.js --watch src --watch main.js --exec babel-node --presets es2015"
   },
   "author": "sekwon choi",
