@@ -58,6 +58,7 @@ passport.use(new facebookStrategy({
         }
         else {
           console.log("user is already signed up");
+	    console.log(user);
         }
       })
     return cb(null, profile);
@@ -73,11 +74,13 @@ passport.use(new facebookStrategy({
 // example does not have a database, the complete Twitter profile is serialized
 // and deserialized.
 passport.serializeUser(function(user, cb) {
-  cb(null, user);
+  cb(null, user.id);
 });
 
-passport.deserializeUser(function(obj, cb) {
-  cb(null, obj);
+passport.deserializeUser(function(id, cb) {
+    User.findById(id, function(err, user) {
+	cb(null, user);
+    });
 });
 
 /*
@@ -90,15 +93,19 @@ router.use(function(req, res, next){
   // fill up middleware work here
   // - 1) extra logging for analytics and statistics
   // - 2) session handling
-  console.log("/login router is being accessed with request:" + req.body);
+  console.log("/login router is being accessed with request:" + req.session);
 
   if(req.session && req.session.user){
-    User.findOne({email: req.session.user.email}, function(err, user){
+      console.log("user id " + req.session.user);
+      User.findOne({id: req.session.user.id}, function(err, user){
       if(user){
+	  console.log("user found :" + user.id); 
           req.user = user;
           delete req.user.oauth; // delete the oauth information from the session
           req.session.user = user; //refresh session value
           req.locals.user = user;
+      }else{
+	  console.log("user not found");
       }
     });
   }
@@ -107,14 +114,6 @@ router.use(function(req, res, next){
   next();
 });
 
-/*
-router.route('/login')
-      .get(function(req, res){
-            console.log("/login accessed");
-            res.json({message:"hello login"});
-            //res.render('login');
-          });
-*/
 
 // 이게 실제로 facebookStrategy를 통해서 facebook에 authentication을 request하는 부분.
 // 즉 /login/facebook을 GET하면 facebook authentication request가 시작된다.
@@ -123,36 +122,34 @@ router.route('/login/facebook')
 
 // facebook authentication이 끊나고 돌아오는 url.
 // facebook strategy에 이 url을 알려주어야 한다.
-router.route('/login/facebook/return')
-      .get(passport.authenticate('facebook', { successRedirect: 'http://www.meetflix.org', failureRedirect: '/login' }),
-          function(req, res) {
-            User.findOne({email: req.user.email}, function(err, user){
-          if (err) { console.log("error happened");}
-                if(user){
-                  console.log("returned : with email found");
-                  res.cookie('id', user.id, {domain: '.meetflix.org'});
-                  res.cookie('email', user.email, {domain: '.meetflix.org'});
-                  res.cookie('token', user.oauth[0].accesstoken, {domain: '.meetflix.org'})
-              } else {
-                console.log("returned : with email not found");
-              }
-            });
-            console.log("facebook returned");
-        });
-
-router.route('/logout')
-      .get(function(req, res){
-        console.log("log out");
+router
+    .route('/login/facebook/return')
+    .get(passport.authenticate('facebook', 
+			       { successRedirect: 'http://www.meetflix.org', failureRedirect: '/login' }),
+			       function(req, res) {
+				   console.log("/login/facebook/return accessed...");
+				   User.findOne({email: req.user.email}, function(err, user){
+				       if (err) { console.log("error happened");}
+				       if(user){
+					   console.log("returned : with email found");
+					   res.cookie('id', user.id, {domain: '.meetflix.org'});
+					   res.cookie('email', user.email, {domain: '.meetflix.org'});
+					   res.cookie('token', user.oauth[0].accesstoken, {domain: '.meetflix.org'})
+				       } else {
+					   console.log("returned : with email not found");
+				       }
+				   });
+				   console.log("facebook returned");
+			       });
+	 
+router
+    .route('/logout')
+    .get(function(req, res){
+	console.log("log out");
         console.log(req.session);
-        req.session.reset();
-        res.redirect('http://www.meetflix.org');
-      });
-/*
-app.get('/profile',
-  require('connect-ensure-login').ensureLoggedIn(),
-  function(req, res){
-    res.render('profile', { user: req.user });
-  });
-*/
+        //req.session.reset();
+	req.logout();
+	res.redirect('http://www.meetflix.org');
+    });
 
 module.exports = router;
