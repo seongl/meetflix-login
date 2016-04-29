@@ -19,8 +19,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(require('morgan')('combined'));
 app.use(require('cookie-parser')());
-app.use(require('express-session')({ name: "oauth-cookie",
-                                     secret: 'unguessable',
+app.use(require('express-session')({ secret: 'unguessable',
                                      resave: true,
                                      saveUninitialized: true,
                                      cookie: { httpOnly: true, secure: false}}));
@@ -38,7 +37,7 @@ app.use('/api', apiRoute);
 app.listen(3000);
 
 // error handlers
-
+/*
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
@@ -60,5 +59,5 @@ app.use(function(err, req, res, next) {
         error: {}
     });
 });
-
+*/
 console.log('Authentication/RESTful-API server started on port 3000');

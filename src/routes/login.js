@@ -13,9 +13,6 @@ var User = require('../model/model.js').User;
 // with a user object, which will be set at `req.user` in route handlers after
 // authentication.
 
-passport.initialize();
-passport.session();
-
 // 억세스 토큰, refresh token을 받음 -> verify function불림
 passport.use(new facebookStrategy({
     clientID: config.FACEBOOK_CLIENT_ID,
@@ -67,11 +64,18 @@ passport.use(new facebookStrategy({
 // example does not have a database, the complete Twitter profile is serialized
 // and deserialized.
 passport.serializeUser(function(user, cb) {
+    console.log("serialize user:", user);
+    /* what is set here will appear as passport. e.g
+      passport: {id: xxx} }
+     */
     cb(null, user.id);
 });
 
-passport.deserializeUser(function(id, cb) {
-    User.findById(id, function(err, user) {
+passport.deserializeUser(function(userid, cb) {
+    console.log("deserialize id:", userid);
+    User.findOne({id: userid}, function(err, user) {
+	//if(user) { console.log("user found by id at deserialized"); }
+	//else { console.log("user not found by id at deserialized"); }
 	cb(null, user);
     });
 });
@@ -86,9 +90,11 @@ router.use(function(req, res, next){
     // fill up middleware work here
     // - 1) extra logging for analytics and statistics
     // - 2) session handling
-    console.log("/login router is being accessed with request:" + req.session);
+    console.log("/login router is being accessed with request:");
+    console.log("req.session:", req.session);
+
     if(req.session && req.session.user){
-	console.log("user id " + req.session.user);
+	console.log("user id: ", req.session.user);
 	User.findOne({id: req.session.user.id}, function(err, user){
 	    if(user){
 		console.log("user found :" + user.id); 
@@ -121,9 +127,14 @@ router
     .get(passport.authenticate('facebook', 
 			       {failureRedirect: '/login/facebook'}),
 	 function(req, res) {
-	     console.log(req.user);
-	     console.log("---------------------- --- --");
-	     User.findOne({email: req.user.email}, function(err, user){
+	     // when authentication is successful
+	     console.log("/login/facebook/return router");
+	     console.log("req.user:", req.user);
+	     console.log("req.session:", req.session);
+	     
+	     /*
+	     // no need to access db again when passport middleware just finished adding one 
+	     User.findOne({id: req.session.passport.user}, function(err, user){
 		 if (err) { console.log("error happened");}
 		 if (user) {
 		     // TODO : when found case
@@ -133,25 +144,27 @@ router
 		     console.log("returned : with email not found");
 		 }
 	     });
+	     */
+	     res.cookie('user.id', req.session.passport.user).send();
 	     res.redirect("http://www.meetflix.org");
-	     //res.redirect('/profile');
 	 });
 
 router
     .route('/logout')
     .get(function(req, res){
-	console.log("log out");
-        console.log(req.session);
-        req.logout();
+	console.log("/logout router");
+        console.log("req.session:", req.session);
+	req.logout();
 	res.redirect('http://www.meetflix.org');
     });
 
 router
     .route('/profile')
-    .get(function(req, res) {
+    .get(isLoggedIn, function(req, res) {
 	console.log("profile route");
-	console.log(req.isAuthenticated());
-	console.log(req.user);
+	//console.log(req.isAuthenticated());
+	//console.log(req.user);
+	//console.log("req.session:", req.session);
 	res.json(req.user);
     });
 
