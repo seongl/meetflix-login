@@ -162,10 +162,15 @@ router
     .route('/profile')
     .get(isLoggedIn, function(req, res) {
 	console.log("profile route");
-	//console.log(req.isAuthenticated());
-	//console.log(req.user);
-	//console.log("req.session:", req.session);
-	res.json(req.user);
+	User.findOne({id: req.session.passport.user}, function(err, user) {
+	    if(err) console.log("no user found for profile");
+	    if(user){
+		//res.json(user); // too much information. figure out only what is necessary 
+		res.json({photourl:user.photo});
+	    } else {
+		res.json({"user":"not found"});
+	    }
+	});
     });
 
 // route middleware to make sure a user is logged in
