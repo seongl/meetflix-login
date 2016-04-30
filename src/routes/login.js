@@ -70,10 +70,10 @@ passport.serializeUser(function(user, cb) {
     cb(null, user._id);
 });
 
-passport.deserializeUser(function(_id, cb) {
+passport.deserializeUser(function(userid, cb) {
     console.log("deserialize id:", userid);
-    //User.findOnd({id: userid}, function(err, user) {
-    User,findById(_id, function(err, user) {
+    User.findOne({_id: userid}, function(err, user) {
+    //User,findById(_id, function(err, user) {
 	//if(user) { console.log("user found by id at deserialized"); }
 	//else { console.log("user not found by id at deserialized"); }
 	cb(null, user);
@@ -129,7 +129,7 @@ router
 	     console.log("req.session:", req.session);
 
 	     res.cookie('user.id', req.session.passport.user, 
-			{domain:'.meetflix.org', secure:true, httpOnly:true}).send();
+			{domain:'meetflix.org', secure:true, httpOnly:false}).send();
 	     res.redirect("https://www.meetflix.org");
 	 });
 
