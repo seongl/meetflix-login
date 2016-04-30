@@ -17,7 +17,7 @@ var User = require('../model/model.js').User;
 passport.use(new facebookStrategy({
     clientID: config.FACEBOOK_CLIENT_ID,
     clientSecret: config.FACEBOOK_CLIENT_SECRET,
-    callbackURL: 'http://auth.meetflix.org/login/facebook/return',
+    callbackURL: 'https://auth.meetflix.org/login/facebook/return',
     enableProof: false,
     profileFields: ['id', 'name', 'emails', 'displayName', 'about', 'gender']
 }, function(accessToken, refreshToken, profile, cb) {
@@ -25,7 +25,7 @@ passport.use(new facebookStrategy({
     //console.log(profile);
     User.findOne({ email: profile.emails[0].value }, function (err, user) {
 	if (err) { 
-	    console.log("error happened");
+	    console.log("/error happened");
 	    return cb(err);
 	}
 	if (!user) {
@@ -47,7 +47,6 @@ passport.use(new facebookStrategy({
         } else {
             console.log("user is already signed up");
 	    console.log(user);
-	    console.log("****");
 	    // if call user, not profile, some error happnes.
 	    return cb(null, user);
         }
@@ -66,14 +65,15 @@ passport.use(new facebookStrategy({
 passport.serializeUser(function(user, cb) {
     console.log("serialize user:", user);
     /* what is set here will appear as passport. e.g
-      passport: {id: xxx} }
+      passport: {user: _id} }
      */
-    cb(null, user.id);
+    cb(null, user._id);
 });
 
-passport.deserializeUser(function(userid, cb) {
+passport.deserializeUser(function(_id, cb) {
     console.log("deserialize id:", userid);
-    User.findOne({id: userid}, function(err, user) {
+    //User.findOnd({id: userid}, function(err, user) {
+    User,findById(_id, function(err, user) {
 	//if(user) { console.log("user found by id at deserialized"); }
 	//else { console.log("user not found by id at deserialized"); }
 	cb(null, user);
@@ -93,15 +93,11 @@ router.use(function(req, res, next){
     console.log("/login router is being accessed with request:");
     console.log("req.session:", req.session);
 
-    if(req.session && req.session.user){
-	console.log("user id: ", req.session.user);
-	User.findOne({id: req.session.user.id}, function(err, user){
+    if(req.session && req.session.passport && req.session.passport.user){
+	console.log("user id: ", req.session.passport.user);
+	User.findById(req.session.passport.user, function(err, user){
 	    if(user){
-		console.log("user found :" + user.id); 
-		req.user = user;
-		delete req.user.oauth; // delete the oauth information from the session
-		req.session.user = user; //refresh session value
-		req.locals.user = user;
+		console.log("user found :", user.name);; 
 	    }else{
 		console.log("user not found");
 	    }
@@ -131,46 +127,35 @@ router
 	     console.log("/login/facebook/return router");
 	     console.log("req.user:", req.user);
 	     console.log("req.session:", req.session);
-	     
-	     /*
-	     // no need to access db again when passport middleware just finished adding one 
-	     User.findOne({id: req.session.passport.user}, function(err, user){
-		 if (err) { console.log("error happened");}
-		 if (user) {
-		     // TODO : when found case
-		     console.log("returned : with email found");
-		 } else {
-		     // TODO : when not found case
-		     console.log("returned : with email not found");
-		 }
-	     });
-	     */
-	     res.cookie('user.id', req.session.passport.user).send();
-	     res.redirect("http://www.meetflix.org");
+
+	     res.cookie('user.id', req.session.passport.user, 
+			{domain:'.meetflix.org', secure:true, httpOnly:true}).send();
+	     res.redirect("https://www.meetflix.org");
 	 });
 
 router
     .route('/logout')
     .get(function(req, res){
 	console.log("/logout router");
-        console.log("req.session:", req.session);
 	req.logout();
-	res.redirect('http://www.meetflix.org');
+	res.redirect('https://www.meetflix.org');
     });
 
 router
     .route('/profile')
     .get(isLoggedIn, function(req, res) {
-	console.log("profile route");
-	User.findOne({id: req.session.passport.user}, function(err, user) {
-	    if(err) console.log("no user found for profile");
-	    if(user){
-		//res.json(user); // too much information. figure out only what is necessary 
-		res.json({photo:user.photo, name:user.name});
-	    } else {
-		res.json({"user":"not found"});
-	    }
-	});
+	console.log("profile route ----");
+	if(req.session && req.session.passport && req.session.passport.user) {
+	    User.findById(req.session.passport.user, function(err, user) {
+		if(err) console.log("no user found for profile");
+		if(user){
+		    //res.json(user); // too much information. figure out only what is necessary 
+		    res.json({photo:user.photo, name:user.name});
+		} else {
+		    res.json({"user":"not found"});
+		}
+	    });
+	}
     });
 
 // Route middleware to make sure a user is logged in
@@ -183,7 +168,7 @@ function isLoggedIn(req, res, next) {
 
     // if they aren't redirect them to the home page
     console.log("not logged in");
-    res.redirect('http://www.meetflix.org');
+    res.redirect('https://www.meetflix.org');
 }
 
 module.exports = router;
