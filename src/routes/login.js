@@ -166,14 +166,14 @@ router
 	    if(err) console.log("no user found for profile");
 	    if(user){
 		//res.json(user); // too much information. figure out only what is necessary 
-		res.json({photourl:user.photo});
+		res.json({photo:user.photo, name:user.name});
 	    } else {
 		res.json({"user":"not found"});
 	    }
 	});
     });
 
-// route middleware to make sure a user is logged in
+// Route middleware to make sure a user is logged in
 function isLoggedIn(req, res, next) {
 
     console.log("isLoggedin");
